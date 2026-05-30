@@ -1,0 +1,10 @@
+# Ignorar a pasta de dependências do Node (nunca deve ir para o Git)
+node_modules/
+
+# Ignorar arquivos de log de erros
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Opcional: Se você NÃO quiser que a sua lista de sorteio vá para o GitHub
+data.js
