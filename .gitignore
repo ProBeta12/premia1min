@@ -7,4 +7,4 @@ yarn-debug.log*
 yarn-error.log*
 
 # Opcional: Se você NÃO quiser que a sua lista de sorteio vá para o GitHub
-data.js
+sorteio.db
