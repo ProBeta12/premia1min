@@ -1,0 +1,24 @@
+{
+  "name": "sorteio-all",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ProBeta12/Sorteio-all.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ProBeta12/Sorteio-all/issues"
+  },
+  "homepage": "https://github.com/ProBeta12/Sorteio-all#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
