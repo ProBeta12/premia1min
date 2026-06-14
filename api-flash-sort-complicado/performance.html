@@ -212,6 +212,13 @@
           <td>Tempo médio ponderado que um cliente passou retido dentro da fila de processamento.</td>
         </tr>
         <tr>
+          <td><b>Tempo Médio de Atendimento</b></td>
+          <td><code>Cálculo Interno</code></td>
+          <td>Experiência</td>
+          <td id="tbl-atendimento" class="metric-value" style="color: #22c55e;">0.0s</td>
+          <td>Tempo médio que uma requisição bem-sucedida levou para ser completamente processada.</td>
+        </tr>
+        <tr>
           <td><b>Recurso Desperdiçado</b></td>
           <td><code>telemetria.tempoDesperdicadoTotal</code></td>
           <td>Otimização</td>
@@ -273,6 +280,10 @@
     <div class="card">
       <h3>Latência Média</h3>
       <p id="kpi-media" style="color: #eab308;">0.0s</p>
+    </div>
+    <div class="card">
+      <h3>Média de Atendimento</h3>
+      <p id="kpi-atendimento" style="color: #22c55e;">0.0s</p>
     </div>
     <div class="card">
       <h3>Recurso Desperdiçado</h3>
@@ -350,12 +361,19 @@
 
     function renderizarDados(telemetria, registros) {
       const tempoMedioChegada = telemetria.solicitacoesTotais > 0 ? (60 / telemetria.solicitacoesTotais).toFixed(2) : "0.00";
+
+      // --- CÁLCULO LOCAL DO TEMPO MÉDIO DE ATENDIMENTO (APENAS APROVADOS) ---
+      const aprovadosFiltrados = registros.filter(r => r.status === 'APROVADO');
+      const tempoMedioAtendimento = aprovadosFiltrados.length > 0 
+        ? (aprovadosFiltrados.reduce((acc, r) => acc + r.tempo_fila_segundos, 0) / aprovadosFiltrados.length).toFixed(1)
+        : "0.0";
       // Atualização dos Cards KPIs
       document.getElementById('kpi-total').innerText = telemetria.solicitacoesTotais; 
 
       document.getElementById('kpi-chegada').innerText = tempoMedioChegada + 's'; // [NOVO]
       document.getElementById('kpi-pico').innerText = telemetria.picoMaximoFila + ' req';
       document.getElementById('kpi-media').innerText = telemetria.latenciaMediaGeral + 's';
+      document.getElementById('kpi-atendimento').innerText = tempoMedioAtendimento + 's';
       document.getElementById('kpi-desperdicio').innerText = telemetria.tempoDesperdicadoTotal + 's';
 
       // Configuração dinâmica do scrollbar horizontal
@@ -402,6 +420,7 @@
       document.getElementById('tbl-chegada').innerText = tempoMedioChegada + 's';
       document.getElementById('tbl-pico').innerText = telemetria.picoMaximoFila + ' req';
       document.getElementById('tbl-media').innerText = telemetria.latenciaMediaGeral + 's';
+      document.getElementById('tbl-atendimento').innerText = tempoMedioAtendimento + 's';
       document.getElementById('tbl-desperdicio').innerText = telemetria.tempoDesperdicadoTotal + 's';
       document.getElementById('tbl-aprovadas').innerText = totalAprovadas;
       document.getElementById('tbl-rejeitadas').innerText = totalRejeitadas;

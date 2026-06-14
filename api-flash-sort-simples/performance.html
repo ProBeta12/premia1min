@@ -223,7 +223,14 @@
           <td><code>latenciaMediaGeral</code></td>
           <td>Experiência</td>
           <td id="tbl-media" class="metric-value" style="color: #eab308;">0.0s</td>
-          <td>Tempo médio ponderado que um cliente passou retido dentro da fila de processamento.</td>
+          <td>Tempo médio ponderado que um cliente passou retido dentro da fila de processamento (inclui Timeouts).</td>
+        </tr>
+        <tr>
+          <td><b>Tempo Médio de Atendimento</b></td>
+          <td><code>Cálculo Interno</code></td>
+          <td>Experiência</td>
+          <td id="tbl-atendimento" class="metric-value" style="color: #22c55e;">0.0s</td>
+          <td>Tempo médio que uma requisição bem-sucedida levou para ser completamente processada.</td>
         </tr>
         <tr>
           <td><b>Recurso Desperdiçado</b></td>
@@ -273,6 +280,10 @@
     <div class="card">
       <h3>Latência Média</h3>
       <p id="kpi-media" style="color: #eab308;">0.0s</p>
+    </div>
+    <div class="card">
+      <h3>Média de Atendimento</h3>
+      <p id="kpi-atendimento" style="color: #22c55e;">0.0s</p>
     </div>
     <div class="card">
       <h3>Recurso Desperdiçado</h3>
@@ -342,6 +353,12 @@
     function renderizarDados(telemetria, registros) {
       const tempoMedioChegada = telemetria.solicitacoesTotais > 0 ? (60 / telemetria.solicitacoesTotais).toFixed(2) : "0.00";
 
+      // --- CÁLCULO LOCAL DO TEMPO MÉDIO DE ATENDIMENTO (APENAS APROVADOS) ---
+      const aprovadosFiltrados = registros.filter(r => r.status === 'APROVADO');
+      const tempoMedioAtendimento = aprovadosFiltrados.length > 0 
+        ? (aprovadosFiltrados.reduce((acc, r) => acc + r.tempo_fila_segundos, 0) / aprovadosFiltrados.length).toFixed(1)
+        : "0.0";
+
       // --- 1. ATUALIZAÇÃO DA NOVA TABELA GERAL ---
       document.getElementById('tbl-total').innerText = telemetria.solicitacoesTotais;
       document.getElementById('tbl-chegada').innerText = tempoMedioChegada + 's';
@@ -349,6 +366,7 @@
       document.getElementById('tbl-rejeitadas').innerText = telemetria.totalRejeitadas;
       document.getElementById('tbl-pico').innerText = telemetria.picoMaximoFila + ' req';
       document.getElementById('tbl-media').innerText = telemetria.latenciaMediaGeral + 's';
+      document.getElementById('tbl-atendimento').innerText = tempoMedioAtendimento + 's';
       document.getElementById('tbl-desperdicio').innerText = telemetria.tempoDesperdicadoTotal + 's';
       document.getElementById('tbl-bruto').innerText = 'R$ ' + Number(telemetria.faturamentoBruto || 0).toFixed(2).replace('.', ',');
       document.getElementById('tbl-taxas').innerText = 'R$ ' + Number(telemetria.totalTaxasPagas || 0).toFixed(2).replace('.', ',');
@@ -357,9 +375,10 @@
       
       // --- 2. ATUALIZAÇÃO DOS CARDS KPIs ---
       document.getElementById('kpi-total').innerText = telemetria.solicitacoesTotais;
-      document.getElementById('kpi-chegada').innerText = tempoMedioChegada + 's'; // [NOVO]
+      document.getElementById('kpi-chegada').innerText = tempoMedioChegada + 's';
       document.getElementById('kpi-pico').innerText = telemetria.picoMaximoFila + ' req';
       document.getElementById('kpi-media').innerText = telemetria.latenciaMediaGeral + 's';
+      document.getElementById('kpi-atendimento').innerText = tempoMedioAtendimento + 's';
       document.getElementById('kpi-desperdicio').innerText = telemetria.tempoDesperdicadoTotal + 's';
 
       // Configuração dinâmica do scrollbar horizontal
@@ -378,39 +397,37 @@
       if (chartFinancas) chartFinancas.destroy();
 
       // [1] Gráfico de Pizza (Throughput)
-    chartVazao = new Chart(document.getElementById('graficoVazao').getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        // 🔄 Injeta os valores atuais direto nos textos das etiquetas
-        labels: [
-          `Aprovadas (Sucesso): ${telemetria.totalAprovadas}`, 
-          `Rejeitadas (Timeout): ${telemetria.totalRejeitadas}`
-        ],
-        datasets: [{
-          data: [telemetria.totalAprovadas, telemetria.totalRejeitadas],
-          backgroundColor: ['#04d361', '#ef4444'],
-          borderWidth: 0
-        }]
-      },
-      options: { 
-        responsive: true, 
-        maintainAspectRatio: false,
-        // ➡️ Joga a legenda para a direita e formata o texto para o modo escuro
-        plugins: {
-          legend: {
-            position: 'right',
-            labels: {
-              color: '#f5f5f7',
-              font: {
-                size: 13,
-                weight: '500'
-              },
-              padding: 15
+      chartVazao = new Chart(document.getElementById('graficoVazao').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: [
+            `Aprovadas (Sucesso): ${telemetria.totalAprovadas}`, 
+            `Rejeitadas (Timeout): ${telemetria.totalRejeitadas}`
+          ],
+          datasets: [{
+            data: [telemetria.totalAprovadas, telemetria.totalRejeitadas],
+            backgroundColor: ['#04d361', '#ef4444'],
+            borderWidth: 0
+          }]
+        },
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: '#f5f5f7',
+                font: {
+                  size: 13,
+                  weight: '500'
+                },
+                padding: 15
+              }
             }
           }
         }
-      }
-    });
+      });
 
       // [2] Gráfico de Barras (Distribuição de Tempo)
       const distribuicaoSegundos = {};
