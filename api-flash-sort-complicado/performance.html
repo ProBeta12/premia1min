@@ -40,6 +40,52 @@
     .btn-atualizar:hover {
       background: #9b33ea;
     }
+
+    /* --- ESTILOS DA NOVA TABELA DE MÉTRICAS --- */
+    .table-container {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 40px;
+      overflow-x: auto;
+    }
+    .table-container h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #f4f4f5;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #27272a;
+      padding-bottom: 10px;
+    }
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .metrics-table th {
+      color: #ff9000;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      border-bottom: 2px solid #27272a;
+      font-weight: 700;
+    }
+    .metrics-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #27272a;
+      font-size: 0.95rem;
+      color: #e4e4e7;
+    }
+    .metrics-table tr:hover {
+      background: rgba(255, 144, 0, 0.03);
+    }
+    .metric-value {
+      font-family: monospace;
+      font-size: 1.05rem;
+      font-weight: bold;
+    }
+
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -124,10 +170,101 @@
     <button class="btn-atualizar" onclick="buscarDados()">🔄 Sincronizar Logs Analíticos</button>
   </div>
 
+  <div class="table-container">
+    <h2>📋 Tabela Geral de Mapeamento de Métricas (Infraestrutura, Validadores & Finanças)</h2>
+    <table class="metrics-table">
+      <thead>
+        <tr>
+          <th>Métrica</th>
+          <th>Identificador / Origem</th>
+          <th>Categoria</th>
+          <th>Valor Atual</th>
+          <th>Descrição Operacional</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Solicitações Totais</b></td>
+          <td><code>telemetria.solicitacoesTotais</code></td>
+          <td>Volumetria</td>
+          <td id="tbl-total" class="metric-value" style="color: #a78bfa;">0</td>
+          <td>Volume bruto de conexões/intenções de compra enviadas para o backend.</td>
+        </tr>
+        <tr>
+          <td><b>Tempo Médio entre Chegadas</b></td>
+          <td><code>Cálculo (60s / Totais)</code></td>
+          <td>Volumetria</td>
+          <td id="tbl-chegada" class="metric-value" style="color: #38bdf8;">0.00s</td>
+          <td>Frequência média em segundos com que novas requisições batem no servidor.</td>
+        </tr>
+        <tr>
+          <td><b>Pico de Estresse</b></td>
+          <td><code>telemetria.picoMaximoFila</code></td>
+          <td>Infraestrutura</td>
+          <td id="tbl-pico" class="metric-value" style="color: #ef4444;">0 req</td>
+          <td>Maior acúmulo de requisições simultâneas registradas no buffer de espera físico.</td>
+        </tr>
+        <tr>
+          <td><b>Latência Média Geral</b></td>
+          <td><code>telemetria.latenciaMediaGeral</code></td>
+          <td>Experiência</td>
+          <td id="tbl-media" class="metric-value" style="color: #eab308;">0.0s</td>
+          <td>Tempo médio ponderado que um cliente passou retido dentro da fila de processamento.</td>
+        </tr>
+        <tr>
+          <td><b>Recurso Desperdiçado</b></td>
+          <td><code>telemetria.tempoDesperdicadoTotal</code></td>
+          <td>Otimização</td>
+          <td id="tbl-desperdicio" class="metric-value" style="color: #f43f5e;">0s</td>
+          <td>Tempo cumulativo de CPU jogado fora somando a espera de todas as requisições rejeitadas.</td>
+        </tr>
+        <tr>
+          <td><b>Transações Aprovadas</b></td>
+          <td><code>Soma dos Validadores</code></td>
+          <td>Vazão</td>
+          <td id="tbl-aprovadas" class="metric-value" style="color: #04d361;">0</td>
+          <td>Total de requisições liquidadas com sucesso pelos bancos parceiros.</td>
+        </tr>
+        <tr>
+          <td><b>Transações Rejeitadas</b></td>
+          <td><code>contagemBancos['Descartado']</code></td>
+          <td>Vazão</td>
+          <td id="tbl-rejeitadas" class="metric-value" style="color: #ef4444;">0</td>
+          <td>Volume de requisições que estouraram o limite de timeout e foram descartadas.</td>
+        </tr>
+        <tr>
+          <td><b>Faturamento Bruto Total</b></td>
+          <td><code>Soma finBruto</code></td>
+          <td>Financeiro</td>
+          <td id="tbl-bruto" class="metric-value" style="color: #e4e4e7;">R$ 0,00</td>
+          <td>Valor total transacionado considerando a soma de todas as aprovações.</td>
+        </tr>
+        <tr>
+          <td><b>Taxas de Rede Totais</b></td>
+          <td><code>Soma finTaxas</code></td>
+          <td>Financeiro</td>
+          <td id="tbl-taxas" class="metric-value" style="color: #f43f5e;">R$ 0,00</td>
+          <td>Custo operacional cumulativo absorvido pelos gateways e taxas de redes dos bancos.</td>
+        </tr>
+        <tr>
+          <td><b>Lucro Líquido Consolidado</b></td>
+          <td><code>Soma finLiquido</code></td>
+          <td>Financeiro</td>
+          <td id="tbl-liquido" class="metric-value" style="color: #04d361;">R$ 0,00</td>
+          <td>Receita real limpa injetada no caixa após desconto das taxas de intermediação.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="cards-grid">
     <div class="card">
       <h3>Requisições Totais</h3>
       <p id="kpi-total" style="color: #a78bfa;">0</p>
+    </div>
+    <div class="card">
+      <h3>Frequência de Chegada</h3>
+      <p id="kpi-chegada" style="color: #38bdf8;">0.00s</p>
     </div>
     <div class="card">
       <h3>Pico de Estresse (Fila)</h3>
@@ -212,8 +349,11 @@
     }
 
     function renderizarDados(telemetria, registros) {
+      const tempoMedioChegada = telemetria.solicitacoesTotais > 0 ? (60 / telemetria.solicitacoesTotais).toFixed(2) : "0.00";
       // Atualização dos Cards KPIs
-      document.getElementById('kpi-total').innerText = telemetria.solicitacoesTotais;
+      document.getElementById('kpi-total').innerText = telemetria.solicitacoesTotais; 
+
+      document.getElementById('kpi-chegada').innerText = tempoMedioChegada + 's'; // [NOVO]
       document.getElementById('kpi-pico').innerText = telemetria.picoMaximoFila + ' req';
       document.getElementById('kpi-media').innerText = telemetria.latenciaMediaGeral + 's';
       document.getElementById('kpi-desperdicio').innerText = telemetria.tempoDesperdicadoTotal + 's';
@@ -251,6 +391,24 @@
         }
       });
 
+      // --- PROCESSAMENTO E INJEÇÃO DE DADOS NA NOVA TABELA GERAL ---
+      const totalBruto = finBruto.Nubank + finBruto.Inter + finBruto['Itaú'] + finBruto.SolanaPay;
+      const totalTaxas = finTaxas.Nubank + finTaxas.Inter + finTaxas['Itaú'] + finTaxas.SolanaPay;
+      const totalLiquido = finLiquido.Nubank + finLiquido.Inter + finLiquido['Itaú'] + finLiquido.SolanaPay;
+      const totalAprovadas = contagemBancos.Nubank + contagemBancos.Inter + contagemBancos['Itaú'] + contagemBancos.SolanaPay;
+      const totalRejeitadas = contagemBancos.Descartado;
+
+      document.getElementById('tbl-total').innerText = telemetria.solicitacoesTotais;
+      document.getElementById('tbl-chegada').innerText = tempoMedioChegada + 's';
+      document.getElementById('tbl-pico').innerText = telemetria.picoMaximoFila + ' req';
+      document.getElementById('tbl-media').innerText = telemetria.latenciaMediaGeral + 's';
+      document.getElementById('tbl-desperdicio').innerText = telemetria.tempoDesperdicadoTotal + 's';
+      document.getElementById('tbl-aprovadas').innerText = totalAprovadas;
+      document.getElementById('tbl-rejeitadas').innerText = totalRejeitadas;
+      document.getElementById('tbl-bruto').innerText = 'R$ ' + totalBruto.toFixed(2).replace('.', ',');
+      document.getElementById('tbl-taxas').innerText = 'R$ ' + totalTaxas.toFixed(2).replace('.', ',');
+      document.getElementById('tbl-liquido').innerText = 'R$ ' + totalLiquido.toFixed(2).replace('.', ',');
+
       // Destruição segura de instâncias anteriores do Chart.js
       if (chartVazao) chartVazao.destroy();
       if (chartTempoBanco) chartTempoBanco.destroy();
@@ -262,14 +420,31 @@
       chartVazao = new Chart(document.getElementById('graficoVazao').getContext('2d'), {
         type: 'doughnut',
         data: {
-          labels: Object.keys(contagemBancos),
+          // 🔄 Altera as etiquetas para incluir o nome do banco + o valor atual de requisições
+          labels: Object.keys(contagemBancos).map(b => `${b}: ${contagemBancos[b]}`),
           datasets: [{
             data: Object.values(contagemBancos),
             backgroundColor: Object.keys(contagemBancos).map(b => CORES_BANCOS[b]),
             borderWidth: 0
           }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right', // ➡️ Joga a legenda para o lado direito do gráfico
+              labels: {
+                color: '#f5f5f7', // Deixa o texto claro para contrastar com o fundo escuro
+                font: {
+                  size: 13,
+                  weight: '500'
+                },
+                padding: 15 // Dá um espaçamento extra entre uma linha e outra na legenda
+              }
+            }
+          }
+        }
       });
 
       // [2] Gráfico de Barras: Latência Média por Banco
@@ -296,7 +471,7 @@
         }
       });
 
-      // [3] Gráfico de Linha Sem Pontos (Crescimento de Aatraso Geral)
+      // [3] Gráfico de Linha Sem Pontos (Crescimento de Atraso Geral)
       chartEscalonamento = new Chart(document.getElementById('graficoEscalonamento').getContext('2d'), {
         type: 'line',
         data: {

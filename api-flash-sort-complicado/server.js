@@ -71,6 +71,11 @@ function calcularTempoEsperaFila() {
 function gerenciarAlgoritmoRoteamento() {
   const tempoEsperaAtual = calcularTempoEsperaFila();
 
+
+  // [NOVO] Regra de Ativação por Tempo Crítico do Lote
+  if (tempoRestante <= 10 && tempoRestante > 0 && filaEspera.length > 0) {
+    BANCOS.SolanaPay.ativo = true;
+  }
   // 1. Regras de Ativação por Gargalo
   if (!BANCOS.Inter.ativo && tempoEsperaAtual >= BANCOS.Inter.gatilhoAtivar) {
     BANCOS.Inter.ativo = true;
@@ -291,6 +296,12 @@ app.post('/painel/iniciar', (req, res) => {
   intervaloCronometro = setInterval(() => {
     tempoRestante--;
     enviarParaPainel({ tipo: 'tempo', tempo: tempoRestante, filaRestante: filaEspera.length, tempoEspera: calcularTempoEsperaFila() });
+
+    // [NOVO] GATILHO CRÍTICO: Faltando 10 segundos ou menos com pessoas na fila
+  if (tempoRestante <= 10 && tempoRestante > 0 && filaEspera.length > 0) {
+    BANCOS.SolanaPay.ativo = true;
+    gerenciarAlgoritmoRoteamento(); // Força a execução imediata da drenagem total
+  }
 
     if (tempoRestante <= 0) {
       clearInterval(intervaloCronometro);
