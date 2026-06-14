@@ -204,7 +204,7 @@ app.post('/comprar-ticket', (req, res) => {
   const { nome } = req.body;
 
   if (!sorteioAtivo || tempoRestante <= 0) {
-    return res.status(400).json({ erro: 'FlashSort inativo ou tempo do lote esgotado!' });
+    return res.status(400).json({ erro: 'Premia1min inativo ou tempo do lote esgotado!' });
   }
   if (!nome || nome.trim() === "") {
     return res.status(400).json({ erro: 'Nome inválido.' });
@@ -282,7 +282,7 @@ app.get('/painel/dados-analise', (req, res) => {
 
 // Iniciar Lote de 1 minuto
 app.post('/painel/iniciar', (req, res) => {
-  if (sorteioAtivo) return res.status(400).send('FlashSort já está rodando.');
+  if (sorteioAtivo) return res.status(400).send('Premia1min já está rodando.');
   sorteioAtivo = true;
   tempoRestante = 60;
   filaEspera = [];
@@ -400,4 +400,4 @@ app.get('/performance', (req, res) => {
   res.sendFile(path.join(__dirname, 'performance.html'));
 });
 
-app.listen(PORT, () => console.log(`[FlashSort] Cluster rodando com Drenagem Total na porta ${PORT}`));
+app.listen(PORT, () => console.log(`[Premia1min] Cluster rodando com Drenagem Total na porta ${PORT}`));

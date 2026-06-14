@@ -57,7 +57,7 @@ function iniciarProcessamento() {
   const processarProximo = () => {
     if (!sorteioAtivo && filaEspera.length === 0) {
       sistemaProcessando = false;
-      enviarParaPainel({ tipo: 'status-sistema', mensagem: 'FlashSort em espera. Aguardando abertura de inscrições...' });
+      enviarParaPainel({ tipo: 'status-sistema', mensagem: 'Premia1min em espera. Aguardando abertura de inscrições...' });
       return;
     }
 
@@ -128,7 +128,7 @@ app.post('/comprar-ticket', (req, res) => {
   const { nome } = req.body;
 
   if (!sorteioAtivo || tempoRestante <= 0) {
-    return res.status(400).json({ erro: 'O FlashSort não está ativo ou o tempo esgotou!' });
+    return res.status(400).json({ erro: 'O Premia1min não está ativo ou o tempo esgotou!' });
   }
   if (!nome || nome.trim() === "") {
     return res.status(400).json({ erro: 'Nome inválido.' });
@@ -194,7 +194,7 @@ app.get('/painel/dados-analise', (req, res) => {
 });
 
 app.post('/painel/iniciar', (req, res) => {
-  if (sorteioAtivo) return res.status(400).send('FlashSort já está rodando.');
+  if (sorteioAtivo) return res.status(400).send('Premia1min já está rodando.');
   sorteioAtivo = true;
   tempoRestante = 60;
   filaEspera = [];
@@ -307,4 +307,4 @@ app.post('/painel/limpar', (req, res) => {
 app.get('/painel', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/performance', (req, res) => res.sendFile(path.join(__dirname, 'performance.html')));
 
-app.listen(PORT, () => console.log(`[FlashSort] Servidor rodando com sucesso na porta ${PORT}`));
+app.listen(PORT, () => console.log(`[Premia1min] Servidor rodando com sucesso na porta ${PORT}`));
