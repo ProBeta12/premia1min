@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>FlashSort - Balancer Multi-Bancos</title>
+  <style>
+    /* Cole o seu CSS aqui dentro, como estava no código anterior */
+    body { font-family: system-ui, sans-serif; background: #0c0c0e; color: #f5f5f7; padding: 20px; max-width: 1200px; margin: 0 auto; }
+    h1 { color: #820ad1; text-align: center; margin-bottom: 5px; font-weight: 800; }
+    h2.subtitle { text-align: center; color: #a8a8b3; font-size: 1.1rem; margin-top: 0; margin-bottom: 25px; font-weight: 400; }
+    .stats-topo { display: flex; gap: 20px; justify-content: center; margin: 15px 0; }
+    .stat-card { background: #18181b; border: 1px solid #27272a; padding: 10px 25px; border-radius: 12px; text-align: center; min-width: 180px; }
+    .stat-card h4 { margin: 0; color: #a1a1aa; font-size: 0.85rem; text-transform: uppercase; }
+    .stat-card p { margin: 5px 0 0 0; font-size: 2rem; font-weight: bold; }
+    #tempo { color: #ff9000; }
+    #faturamento { color: #04d361; }
+    .bancos-container { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 15px; margin-bottom: 25px; }
+    .bancos-container h3 { margin-top: 0; font-size: 0.9rem; color: #a1a1aa; text-transform: uppercase; text-align: center; margin-bottom: 15px;}
+    .bancos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+    .banco-card { background: #242427; border: 1px solid #3f3f46; border-radius: 8px; padding: 12px; text-align: center; opacity: 0.3; transition: all 0.3s ease; }
+    .banco-card.ativo { opacity: 1; border-color: #04d361; box-shadow: 0 0 10px rgba(4, 211, 97, 0.2); }
+    .banco-card h4 { margin: 0; font-size: 1.1rem; color: #fff; }
+    .banco-card p { margin: 5px 0 0 0; font-size: 0.8rem; color: #a1a1aa; }
+    .banco-card .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-top: 5px; background: #18181b; }
+    .card-nubank { border-left: 4px solid #820ad1; }
+    .card-inter { border-left: 4px solid #ff6600; }
+    .card-itau { border-left: 4px solid #f97316; }
+    .card-solana { border-left: 4px solid #14f195; }
+    .status-sistema { background: #1c1917; border: 1px solid #444; padding: 10px; border-radius: 8px; text-align: center; font-style: italic; color: #fdba74; margin-bottom: 25px; }
+    .controles { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; }
+    button { background: #820ad1; color: #fff; border: none; padding: 12px 24px; font-size: 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    button.btn-sortear { background: #04d361; color: #121214; }
+    button.btn-limpar { background: #27272a; color: #f4f4f5; border: 1px solid #3f3f46; }
+    .grid-inferior { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .box { background: #18181b; padding: 20px; border-radius: 12px; border: 1px solid #27272a; height: 400px; overflow-y: auto; }
+    .box h3 { margin-top: 0; color: #f4f4f5; font-size: 1.1rem; border-bottom: 1px solid #27272a; padding-bottom: 10px; display: flex; justify-content: space-between; }
+    .log-item { background: #242427; padding: 12px; margin-bottom: 8px; border-radius: 6px; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; }
+    .log-item.fila { border-left: 4px solid #ff9000; background: #221502; color: #ffedd5; }
+    .log-item.descartado { border-left: 4px solid #ef4444; background: #2d1010; color: #fca5a5; }
+    .metric-tag { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #18181b; border: 1px solid #3f3f46; }
+    .banco-tag { margin-left: 5px; text-transform: uppercase; font-size: 0.7rem; }
+    .vencedor-box { background: #820ad1; color: #fff; padding: 20px; border-radius: 12px; text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 25px; display: none; }
+    .vencedor-box.confirmado { background: #04d361; color: #121214; }
+    .vencedor-box.expirou { background: #ef4444; color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>⚡ FlashSort Multiplex</h1>
+  <h2 class="subtitle">Estratégia Drenagem Extrema (Porteira Aberta) para Lotes de 60s</h2>
+  <div class="stats-topo">
+    <div class="stat-card"><h4>Janela Lote</h4><p id="tempo">01:00</p></div>
+    <div class="stat-card"><h4>Faturamento Líquido</h4><p id="faturamento">R$ 0,00</p></div>
+  </div>
+  <div class="bancos-container">
+    <h3>Validadores e Chaveamento Automatizado</h3>
+    <div class="bancos-grid">
+      <div class="banco-card card-nubank ativo" id="card-Nubank"><h4>Nubank</h4><p>Velocidade: 1.0s</p><span class="badge" style="color: #a78bfa;">Taxa: 10%</span><p style="font-size:0.7rem; color:#04d361; margin-top:5px;">Sempre Ativo</p></div>
+      <div class="banco-card card-inter" id="card-Inter"><h4>Inter</h4><p>Velocidade: 0.5s</p><span class="badge" style="color: #ff6600;">Taxa: 20%</span><p style="font-size:0.65rem; color:#aaa; margin-top:5px;">Gatilho: Fila &ge; 10s</p></div>
+      <div class="banco-card card-itau" id="card-Itaú"><h4>Itaú</h4><p>Velocidade: 0.5s</p><span class="badge" style="color: #f97316;">Taxa: 30%</span><p style="font-size:0.65rem; color:#aaa; margin-top:5px;">Gatilho: Fila &ge; 20s</p></div>
+      <div class="banco-card card-solana" id="card-SolanaPay"><h4>SolanaPay</h4><p>Velocidade: Instantâneo</p><span class="badge" style="color: #14f195;">Taxa: 80%</span><p style="font-size:0.65rem; color:#aaa; margin-top:5px;">Gatilho: Fila &gt; 60s</p></div>
+    </div>
+  </div>
+  <div class="status-sistema" id="status-sistema">Aguardando abertura de inscrições...</div>
+  <div class="controles">
+    <button onclick="iniciarSorteio()">Abrir Lote (1 Lote)</button>
+    <button class="btn-sortear" onclick="realizarSorteio()">🎉 Sortear Ticket</button>
+    <button class="btn-limpar" onclick="limparTudo()">🗑️ Limpar Banco</button>
+  </div>
+  <div class="vencedor-box" id="vencedor-box"></div>
+  <div class="grid-inferior">
+    <div class="box">
+      <h3><span>⏳ Fila de Espera</span><span style="color: #ff9000; font-weight: normal; font-size: 0.85rem;" id="tempo-espera-painel">Espera: 0s</span></h3>
+      <div id="fila-logs">Nenhum processo pendente...</div>
+    </div>
+    <div class="box">
+      <h3>✅ Ledger de Validações</h3>
+      <div id="atendidos-logs">Nenhuma transação efetuada...</div>
+    </div>
+  </div>
+
+  <script>
+    // Cole aqui todo o seu código JS (o que estava dentro da tag <script> no HTML anterior)
+    const evtSource = new EventSource('/painel-logs');
+    evtSource.onmessage = function(event) {
+        const dados = JSON.parse(event.data);
+        if (dados.tipo === 'tempo') {
+            document.getElementById('tempo').innerText = '00:' + String(dados.tempo).padStart(2, '0');
+            document.getElementById('status-sistema').innerText = '🔥 Processando Lote. Fila: ' + dados.filaRestante;
+            document.getElementById('tempo-espera-painel').innerText = 'Espera Estimada: ' + dados.tempoEspera + 's';
+        }
+        if (dados.tipo === 'status-bancos') {
+            Object.keys(dados.bancos).forEach(chave => {
+                const b = dados.bancos[chave];
+                const card = document.getElementById('card-' + b.nome);
+                if (card) {
+                    if (b.ativo) card.classList.add('ativo');
+                    else card.classList.remove('ativo');
+                }
+            });
+        }
+        if (dados.tipo === 'nova-requisicao') {
+            const div = document.getElementById('fila-logs');
+            if(div.innerHTML.includes('Nenhum processo')) div.innerHTML = '';
+            document.getElementById('tempo-espera-painel').innerText = 'Espera Estimada: ' + dados.tempoEspera + 's';
+            div.innerHTML += '<div class="log-item fila"><span>📥 Solicitante: <strong>' + dados.nome + '</strong></span><span class="metric-tag" style="color:#ff9000">Alocando...</span></div>';
+        }
+        if (dados.tipo === 'requisicao-processada') {
+            const filaDiv = document.getElementById('fila-logs');
+            if(filaDiv.firstChild) filaDiv.removeChild(filaDiv.firstChild);
+            if(filaDiv.innerHTML === '') filaDiv.innerHTML = 'Fila vazia...';
+            document.getElementById('tempo-espera-painel').innerText = 'Espera Estimada: ' + dados.tempoEspera + 's';
+            const atendidosDiv = document.getElementById('atendidos-logs');
+            if(atendidosDiv.innerHTML.includes('Nenhuma transação')) atendidosDiv.innerHTML = '';
+            let corBanco = '#a78bfa';
+            if(dados.banco === 'Inter') corBanco = '#ff6600';
+            if(dados.banco === 'Itaú') corBanco = '#f97316';
+            if(dados.banco === 'SolanaPay') corBanco = '#14f195';
+            atendidosDiv.innerHTML = '<div class="log-item"><div>⚙️ <strong>' + dados.nome + '</strong> <span class="metric-tag banco-tag" style="color:'+corBanco+'; border-color:'+corBanco+'">' + dados.banco + '</span> <code style="background:#0c0c0e; padding:2px 6px; color:#ff9000; border-radius:4px; font-size:0.8rem; font-weight:bold">' + dados.chaveSecreta + '</code></div><span class="metric-tag">⏱️ Fila: ' + dados.tempoFila + 's | Taxa: R$ '+ dados.taxaCobranca.toFixed(2) +'</span></div>' + atendidosDiv.innerHTML;
+            document.getElementById('faturamento').innerText = 'R$ ' + dados.lucroLiquido.toFixed(2).replace('.', ',');
+        }
+        if (dados.tipo === 'fim-tempo') {
+            document.getElementById('tempo').innerText = '00:00';
+            document.getElementById('status-sistema').innerText = dados.mensagem;
+            document.getElementById('fila-logs').innerHTML = '<div class="log-item descartado">❌ Fila encerrada.</div>';
+            document.getElementById('tempo-espera-painel').innerText = 'Espera: 0s';
+            document.getElementById('card-Inter').classList.remove('ativo');
+            document.getElementById('card-Itaú').classList.remove('ativo');
+            document.getElementById('card-SolanaPay').classList.remove('ativo');
+        }
+        if (dados.tipo === 'ganhador-sorteado') {
+            const box = document.getElementById('vencedor-box'); box.className = 'vencedor-box'; box.style.display = 'block';
+            box.innerHTML = '🔔 Ticket #' + dados.ticket + ' (' + dados.nome + ') sorteado via ' + dados.banco + '! Valide em <span id="tempo-ganhador">60</span>s!';
+        }
+        if (dados.tipo === 'tempo-ganhador') { const tEl = document.getElementById('tempo-ganhador'); if(tEl) tEl.innerText = dados.tempo; }
+        if (dados.tipo === 'ganhador-expirou') { const box = document.getElementById('vencedor-box'); box.className = 'vencedor-box expirou'; box.innerHTML = '❌ ' + dados.mensagem; }
+        if (dados.tipo === 'ganhador-confirmado') { const box = document.getElementById('vencedor-box'); box.className = 'vencedor-box confirmado'; box.innerHTML = '🏆 VENCEDOR VALIDADO: ' + dados.nome + ' (Ticket #' + dados.ticket + ')! 🏆'; }
+        if (dados.tipo === 'limpar-tela') {
+            document.getElementById('tempo').innerText = '01:00';
+            document.getElementById('faturamento').innerText = 'R$ 0,00';
+            document.getElementById('status-sistema').innerText = 'Aguardando abertura de inscrições...';
+            document.getElementById('fila-logs').innerHTML = 'Nenhum processo pendente...';
+            document.getElementById('atendidos-logs').innerHTML = 'Nenhuma transação efetuada...';
+            document.getElementById('vencedor-box').style.display = 'none';
+            document.getElementById('tempo-espera-painel').innerText = 'Espera: 0s';
+            document.getElementById('card-Inter').classList.remove('ativo');
+            document.getElementById('card-Itaú').classList.remove('ativo');
+            document.getElementById('card-SolanaPay').classList.remove('ativo');
+        }
+    };
+    async function iniciarSorteio() { await fetch('/painel/iniciar', { method: 'POST' }); }
+    async function realizarSorteio() { await fetch('/painel/sortear'); }
+    async function limparTudo() { await fetch('/painel/limpar', { method: 'POST' }); }
+  </script>
+</body>
+</html>

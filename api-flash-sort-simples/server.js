@@ -305,6 +305,7 @@ app.post('/painel/limpar', (req, res) => {
 });
 
 app.get('/painel', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/painel-m', (req, res) => res.sendFile(path.join(__dirname, 'complicado.html')));
 app.get('/performance', (req, res) => res.sendFile(path.join(__dirname, 'performance.html')));
 
 app.listen(PORT, () => console.log(`[FlashSort] Servidor rodando com sucesso na porta ${PORT}`));
