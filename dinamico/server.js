@@ -400,6 +400,6 @@ app.get('/performance', (req, res) => {
 });
 
 app.get('/comprar', (req, res) => res.sendFile(path.join(__dirname, 'comprar.html')));
-app.get('/autocomprar', (req, res) => res.sendFile(path.join(__dirname, 'autoComprar.html')));
+app.get('/autocomprar', (req, res) => res.sendFile(path.join(__dirname, 'autocomprar.html')));
 
 app.listen(PORT, () => console.log(`[Premia1min] Cluster rodando com Drenagem Total na porta ${PORT}`));

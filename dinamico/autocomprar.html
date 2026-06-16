@@ -255,7 +255,7 @@
       adicionarNaFilaVisual(idTemporario, nomeCompleto);
 
       try {
-        const response = await fetch(`$/comprar-ticket`, {
+        const response = await fetch(`/comprar-ticket`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nome: nomeCompleto })
