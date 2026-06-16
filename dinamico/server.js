@@ -395,9 +395,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// [NOVO] Rota para renderizar a interface de telemetria / laboratório de performance
 app.get('/performance', (req, res) => {
   res.sendFile(path.join(__dirname, 'performance.html'));
 });
+
+app.get('/comprar', (req, res) => res.sendFile(path.join(__dirname, 'comprar.html')));
+app.get('/autocomprar', (req, res) => res.sendFile(path.join(__dirname, 'autoComprar.html')));
 
 app.listen(PORT, () => console.log(`[Premia1min] Cluster rodando com Drenagem Total na porta ${PORT}`));
