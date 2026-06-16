@@ -55,7 +55,6 @@
       white-space: nowrap;
     }
     button:hover { background: #02a74b; }
-    button:disabled { background: #555; color: #aaa; cursor: not-allowed; }
 
     /* Layout dos Quadros */
     .grid-quadros {
@@ -99,7 +98,7 @@
     .chave-container { margin-top: 8px; font-size: 0.9rem; color: #a8a8b3; }
     .chave-container code { background: #121214; padding: 2px 6px; color: #ff9000; border-radius: 4px; font-weight: bold; font-family: monospace; }
 
-    /* Layout do Rodapé */
+    /* Layout do Rodapé Atualizado: Alinhamento vertical centralizado */
     .coluna-inferior {
       display: flex;
       flex-direction: column;
@@ -124,10 +123,16 @@
     .flex-inputs { display: flex; gap: 15px; margin-bottom: 15px; }
     
     .btn-atualizar {
-      user-select: none; 
-      -webkit-user-select: none; 
-      touch-action: manipulation; 
-    }
+
+  /* --- ADICIONE AS LINHAS ABAIXO --- */
+  
+  /* Remove a seleção de texto no Android/Desktop */
+  user-select: none; 
+  -webkit-user-select: none; 
+
+  /* Desativa o zoom de duplo toque e atrasos de clique no iOS */
+  touch-action: manipulation; 
+}
     .btn-inferior { width: 100%; padding: 14px; font-size: 1.1rem; }
     .btn-busca { background: #04d361; color: #121214; }
     .btn-busca:hover { background: #02a74b; }
@@ -147,14 +152,14 @@
 <body>
 
   <h1>🎟️ Bilheteria do Sorteio</h1>
-  <p class="sub">Clique no botão iniciar para disparar 500 tickets ao longo de 1 minuto.</p>
+  <p class="sub">Clique quantas vezes quiser para pedir tickets. R$ 2,00 cada.</p>
 
   <div class="compra-box">
     <div class="form-group">
       <label for="nome">Nome do Comprador:</label>
-      <input type="text" id="nome" placeholder="Digite o nome base..." autocomplete="off">
+      <input type="text" id="nome" placeholder="Digite o nome..." autocomplete="off">
     </div>
-    <button id="btn-iniciar" class="btn-atualizar" onclick="iniciarFluxoAutomático()">🚀 Iniciar (500 req)</button>
+    <button class="btn-atualizar" onclick="dispararCompra()">🛒 Comprar Ticket</button>
   </div>
 
   <div class="grid-quadros">
@@ -209,80 +214,59 @@
 
   <script>
     // ⚠️ ALTERE COM A URL DO SEU BACK-END DO CODESPACES
-    const API_URL = "https://fluffy-waffle-q5rxrwjgrx929vq7-4000.app.github.dev";
-
+    
     let contadorFila = 0;
     let contadorCompradas = 0;
+    
+    // Lista local para armazenar os tickets gerados nesta sessão
     let meusTicketsSalvos = [];
 
-    // Nova função controladora para gerenciar o ataque/teste de carga programado
-    function iniciarFluxoAutomático() {
+    // Função de Compra Expressa
+    async function dispararCompra() {
       const inputNome = document.getElementById('nome');
-      const nomeBase = inputNome.value.trim();
-      const btn = document.getElementById('btn-iniciar');
+      const nome = inputNome.value.trim();
 
-      if (!nomeBase) {
-        alert("Por favor, digite um nome base para os tickets!");
+      if (!nome) {
+        alert("Por favor, digite um nome!");
         return;
       }
 
-      // Desativa o botão e o input durante o processo para evitar múltiplos cliques acidentais
-      btn.disabled = true;
-      inputNome.disabled = true;
+      inputNome.focus();
 
-      let enviosEfetuados = 0;
-      const totalRequisicoes = 500;
-      const intervaloMs = 120; // 60 segundos divididos por 500 requisições = 120ms por disparo
-
-      const cronometroDisparo = setInterval(() => {
-        if (enviosEfetuados >= totalRequisicoes) {
-          clearInterval(cronometroDisparo);
-          btn.innerText = "✅ Concluído (500 Req)";
-          inputNome.disabled = false;
-          return;
-        }
-
-        enviosEfetuados++;
-        btn.innerText = `🚀 Enviando (${enviosEfetuados}/${totalRequisicoes})`;
-        
-        // Dispara de forma assíncrona sem travar o timer do setInterval
-        executarRequisicaoIndividual(`${nomeBase} - #${enviosEfetuados}`);
-      }, intervaloMs);
-    }
-
-    // Função isolada que executa a chamada HTTP e atualiza o DOM individualmente
-    async function executarRequisicaoIndividual(nomeCompleto) {
       const idTemporario = 'id-' + Date.now() + Math.random().toString(36).substr(2, 5);
-      adicionarNaFilaVisual(idTemporario, nomeCompleto);
+      adicionarNaFilaVisual(idTemporario, nome);
 
       try {
-        const response = await fetch(`${API_URL}/comprar-ticket`, {
+        const response = await fetch(`/comprar-ticket`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome: nomeCompleto })
+          body: JSON.stringify({ nome: nome })
         });
 
         const dados = await response.json();
         removerDaFilaVisual(idTemporario);
 
         if (response.ok) {
+          // CORREÇÃO: Salvando explicitamente a variável 'nome' local para evitar o undefined
           meusTicketsSalvos.push({
             id: Number(dados.ticket),
-            nome: nomeCompleto, 
+            nome: nome, 
             chave: dados.chave_secreta
           });
-          adicionarNasCompradasVisual(nomeCompleto, dados.ticket, dados.chave_secreta);
+
+          // CORREÇÃO: Passando 'nome' diretamente para a renderização do card
+          adicionarNasCompradasVisual(nome, dados.ticket, dados.chave_secreta);
         } else {
-          adicionarErroVisual(nomeCompleto, dados.erro);
+          adicionarErroVisual(nome, dados.erro);
         }
 
       } catch (error) {
         removerDaFilaVisual(idTemporario);
-        adicionarErroVisual(nomeCompleto, "Erro de conexão com o servidor.");
+        adicionarErroVisual(nome, "Erro de conexão com o servidor.");
       }
     }
 
-    // --- FUNÇÕES AUXILIARES DE BUSCA E VALIDAÇÃO ---
+    // Função para pesquisar chaves locais por número do ticket
     function procurarTicketLocal() {
       const numBusca = Number(document.getElementById('busca-numero').value.trim());
       const boxBusca = document.getElementById('status-busca');
@@ -306,6 +290,7 @@
       }
     }
 
+    // Função para Validar o Prêmio no Servidor
     async function validarPremio() {
       const inputTicket = document.getElementById('resgate-ticket');
       const inputChave = document.getElementById('resgate-chave');
@@ -326,10 +311,13 @@
       boxStatus.innerText = '🔄 Validando dados com o servidor...';
 
       try {
-        const response = await fetch(`${API_URL}/confirmar-premio`, {
+        const response = await fetch(`/confirmar-premio`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ticket: Number(ticket), chave: chave })
+          body: JSON.stringify({
+            ticket: Number(ticket),
+            chave: chave
+          })
         });
 
         const dados = await response.json();
@@ -343,6 +331,7 @@
           boxStatus.className = 'status-box erro-cor';
           boxStatus.innerText = `❌ ${dados.erro}`;
         }
+
       } catch (error) {
         boxStatus.className = 'status-box erro-cor';
         boxStatus.innerText = '❌ Erro de comunicação com o servidor.';
@@ -350,6 +339,7 @@
     }
 
     // --- FUNÇÕES AUXILIARES VISUAIS ---
+
     function adicionarNaFilaVisual(id, nome) {
       const listaFila = document.getElementById('lista-fila');
       const card = document.createElement('div');

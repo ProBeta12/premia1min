@@ -306,5 +306,6 @@ app.post('/painel/limpar', (req, res) => {
 
 app.get('/painel', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/performance', (req, res) => res.sendFile(path.join(__dirname, 'performance.html')));
+app.get('/comprar', (req, res) => res.sendFile(path.join(__dirname, 'comprar.html')));
 
 app.listen(PORT, () => console.log(`[Premia1min] Servidor rodando com sucesso na porta ${PORT}`));
